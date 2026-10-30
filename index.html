@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>你的主罪是哪一条</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{
+    background:#0b0709;
+    color:#e8e2dd;
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    line-height:1.7;
+    background-image:radial-gradient(ellipse at 50% -10%,rgba(120,20,40,.45),transparent 60%);
+  }
+  #app{width:100%;max-width:520px;padding:28px 22px 48px;display:flex;flex-direction:column}
+  .hide{display:none!important}
+  h1{font-size:30px;letter-spacing:2px;font-weight:700;line-height:1.35;
+     background:linear-gradient(180deg,#f3e3c3,#c9a227);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:#8a7f7a;font-size:13px;margin-top:14px;letter-spacing:.5px}
+  .intro{margin-top:34px;font-size:14.5px;color:#b8ada6}
+  .intro p{margin-bottom:12px}
+  .meta{margin-top:26px;font-size:12.5px;color:#6f665f;border-left:2px solid #3a2f2b;padding-left:12px}
+  .btn{
+    margin-top:36px;width:100%;padding:17px;border:none;border-radius:2px;
+    background:linear-gradient(180deg,#b3182f,#7d0f20);color:#fff;font-size:16px;letter-spacing:3px;
+    font-weight:600;cursor:pointer;font-family:inherit;
+    box-shadow:0 8px 24px rgba(150,20,40,.35);
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:transparent;border:1px solid #4a3d38;color:#c9bdb4;box-shadow:none;margin-top:14px;font-size:14px}
+  /* 答题 */
+  .bar{height:2px;background:#241b19;margin-bottom:34px;position:relative}
+  .bar i{position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,#8b1226,#e0b64a);transition:width .3s}
+  .qnum{font-size:12px;color:#6f665f;letter-spacing:2px;margin-bottom:18px}
+  .qtext{font-size:20px;line-height:1.65;min-height:96px;letter-spacing:.5px}
+  .opts{margin-top:34px;display:flex;flex-direction:column;gap:10px}
+  .opt{
+    padding:15px 18px;background:#14100f;border:1px solid #241b19;border-radius:2px;
+    font-size:14.5px;color:#c9bdb4;cursor:pointer;font-family:inherit;text-align:left;
+    transition:all .15s;letter-spacing:.5px;
+  }
+  .opt:active{background:#1e1513;border-color:#6b2a36;color:#f0e6df}
+  /* 结果 */
+  .verdict{margin-top:20px;text-align:center}
+  .verdict .label{font-size:12px;letter-spacing:6px;color:#8a7f7a}
+  .verdict .name{font-size:52px;letter-spacing:8px;margin-top:10px;font-weight:700;
+    background:linear-gradient(180deg,#fff2d6,#c9a227);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .verdict .rank{margin-top:8px;font-size:12.5px;color:#6f665f;letter-spacing:1px}
+  .chart{margin:18px auto 0;width:100%;max-width:340px;display:block}
+  .card{background:#100c0b;border:1px solid #241b19;border-radius:2px;padding:20px;margin-top:22px}
+  .card h3{font-size:13px;letter-spacing:3px;color:#c9a227;font-weight:600;margin-bottom:12px}
+  .card p{font-size:14.5px;color:#c3b8b1;margin-bottom:10px}
+  .scores{margin-top:6px}
+  .score-row{display:flex;align-items:center;gap:10px;margin-bottom:11px;font-size:13px}
+  .score-row .n{width:38px;color:#9a8f88;letter-spacing:1px;flex:none}
+  .score-row .t{flex:1;height:6px;background:#1c1513;border-radius:3px;overflow:hidden}
+  .score-row .t i{display:block;height:100%;background:linear-gradient(90deg,#6b1220,#c9a227);border-radius:3px}
+  .score-row .v{width:28px;text-align:right;color:#6f665f;font-size:12px;flex:none}
+  .share{margin-top:8px;font-size:13.5px;color:#8a7f7a;background:#14100f;padding:14px;border-left:2px solid #3a2f2b;line-height:1.75}
+  .foot{margin-top:30px;font-size:11.5px;color:#4f4742;text-align:center;letter-spacing:1px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const SINS = [
+  {k:'pride', n:'傲慢', d:'你不是自大，你是受不了「我不够好」这个念头被人看见。你宁可一个人扛到累死，也不肯开口说「帮我一下」——因为求助在你看来等于承认自己不行。你身上有一种很硬的东西，别人夸你你点头，别人教你你心里反驳。代价是：你很少真的被人接住过。'},
+  {k:'envy',  n:'嫉妒', d:'你不是见不得别人好，你是拿别人当尺子量自己，而且这把尺子永远在变长。你的痛苦很少来自「我没有」，多半来自「他有而我没有，而且看起来不费劲」。所以你拼命往前跑，方向却是别人定的。'},
+  {k:'wrath', n:'暴怒', d:'你平时挺能忍，忍到某个点会一次性烧起来，话很难听，事后也不太想去补。你的火气不是因为脾气差，是因为你长期把不满压着不说，攒到爆。你在意公平，一旦觉得被轻慢，反应比谁都大。'},
+  {k:'sloth', n:'懒惰', d:'你知道什么是对的，你甚至有清单，问题是清单第一项永远没开始。你不是没能力，你是怕开始了却做得不好——所以宁可不开始，这样还能保留「我只是没认真」这个说法。你的消耗不在做事上，在「该做没做」的自我谴责上。'},
+  {k:'greed', n:'贪婪', d:'你要的不是钱本身，是「够」那个感觉——而它从来没到过。任何机会你都会先算能放大多少，任何东西你都会先比性价比。你同时抓好几根绳子，哪根都舍不得放，因为放手意味着承认错过。'},
+  {k:'gluttony', n:'暴食', d:'你的失控从来不是为了享受，是为了把某种情绪填满。吃到撑、刷到凌晨、买完一阵空虚——你要的是那个「暂时不用想」的间隙。你很难在「刚好够了」的时候停下来，因为停下来就要面对原本那件事。'},
+  {k:'lust', n:'色欲', d:'你渴望被渴望。你很快心动，也很快淡掉，有时候分不清是喜欢那个人，还是喜欢被看见的感觉。你对外表和氛围的敏感度比一般人高，这让你的关系容易开始，也容易散。'}
+];
+
+const Q = [
+  ['别人当面夸你，你心里第一反应是「这我早就知道」','pride'],
+  ['一群人讨论问题，你听完会觉得这帮人没说到点上','pride'],
+  ['你很难接受一个明显不如你的人教你做事','pride'],
+  ['你宁可自己扛，也不愿开口求人帮忙','pride'],
+  ['被人当众指出错误，你表面接受，心里会记很久','pride'],
+  ['你觉得自己身上有一种大部分人看不懂的东西','pride'],
+  ['看到同龄人过得比你好，你第一反应是「他凭什么」','envy'],
+  ['朋友发喜报，你点赞的速度比平时慢了半拍','envy'],
+  ['你会不自觉去翻某个人的主页，翻完心情变差','envy'],
+  ['别人在你擅长的领域被夸，你会觉得夸的人不懂','envy'],
+  ['你偶尔希望那个比你强的人出点小岔子','envy'],
+  ['别人问起你近况，你会挑好的说，因为不想被比下去','envy'],
+  ['被插队、被敷衍的时候，你的火气上得比一般人快','wrath'],
+  ['你生气时说话很冲，事后也不太想去道歉','wrath'],
+  ['有人在群里阴阳你一句，你会想立刻回击','wrath'],
+  ['你开车或走路时骂人的频率不低','wrath'],
+  ['事情没按预期走，你会先怪人而不是先想办法','wrath'],
+  ['你能忍很久，但忍到头会一次把话说得非常难听','wrath'],
+  ['你知道该做什么，但就是迟迟不开第一个动作','sloth'],
+  ['你收藏了很多教程，真正打开的很少','sloth'],
+  ['一件事没有截止日期，你基本不会开始','sloth'],
+  ['你经常刷掉一个下午，然后晚上懊悔','sloth'],
+  ['你更愿意做已经会的事，不愿意学新的','sloth'],
+  ['你的计划常常停在「列出来」那一步','sloth'],
+  ['看到一个能赚钱的路子，你先想的是能不能放大','greed'],
+  ['你在意性价比，甚至会在几块钱上比半天','greed'],
+  ['你不喜欢免费分享自己摸索出来的东西','greed'],
+  ['你常常同时抓好几件事，哪件都不肯放','greed'],
+  ['看到别人赚钱，你会立刻算自己能赚多少','greed'],
+  ['你有过一个念头：要是能一夜之间解决钱的问题就好了','greed'],
+  ['情绪不好的时候你会想吃东西','gluttony'],
+  ['明知会后悔，你还是会把一整包零食吃完','gluttony'],
+  ['你的快乐里，吃喝占的比重不小','gluttony'],
+  ['你会为了「再刷五分钟」熬到很晚','gluttony'],
+  ['你很难在「刚好够了」的时候停下来','gluttony'],
+  ['压力大的时候你会用各种东西填满自己：吃、买、刷','gluttony'],
+  ['你很在意自己在异性眼里的样子','lust'],
+  ['你会因为一个人的长相或声音，对 TA 别的地方更宽容','lust'],
+  ['你会很快对一个人心动，也会很快淡掉','lust'],
+  ['你有时候分不清是喜欢那个人，还是喜欢心动的感觉','lust']
+];
+
+const OPTS = ['非常不像我','不太像我','说不准','有点像','非常像我'];
+const app = document.getElementById('app');
+let idx = 0;
+const score = {pride:0,envy:0,wrath:0,sloth:0,greed:0,gluttony:0,lust:0};
+const count = {pride:0,envy:0,wrath:0,sloth:0,greed:0,gluttony:0,lust:0};
+Q.forEach(q => count[q[1]]++);
+
+function render(){ app.innerHTML = html(); bind(); }
+
+function html(){
+  if(idx === -1) return welcomeHTML();
+  if(idx < Q.length) return questionHTML();
+  return resultHTML();
+}
+
+function welcomeHTML(){
+  return `
+  <h1>你的主罪<br>是哪一条</h1>
+  <div class="sub">七宗罪 · 人格底色测试</div>
+  <div class="intro">
+    <p>不是道德审判。是七个最古老的动力：傲慢、嫉妒、暴怒、懒惰、贪婪、暴食、色欲。</p>
+    <p>每个人身上都有全部七条，区别只在于——哪一条在替你做决定。</p>
+  </div>
+  <div class="meta">40 题 · 约 3 分钟 · 凭直觉选，不要想「应该怎样」<br>没有正确答案，越诚实越准。</div>
+  <button class="btn" id="start">开 始 自 测</button>`;
+}
+
+function questionHTML(){
+  const pct = Math.round(idx / Q.length * 100);
+  return `
+  <div class="bar"><i style="width:${pct}%"></i></div>
+  <div class="qnum">${String(idx+1).padStart(2,'0')} / ${Q.length}</div>
+  <div class="qtext">${Q[idx][0]}</div>
+  <div class="opts">
+    ${OPTS.map((o,i)=>`<button class="opt" data-v="${i+1}">${o}</button>`).join('')}
+  </div>`;
+}
+
+function resultHTML(){
+  const list = SINS.map(s => ({
+    ...s,
+    v: Math.round(score[s.k] / (count[s.k]*5) * 100)
+  })).sort((a,b)=>b.v-a.v);
+  const top = list[0], second = list[1];
+  return `
+  <div class="verdict">
+    <div class="label">你 的 主 罪</div>
+    <div class="name">${top.n}</div>
+    <div class="rank">副罪：${second.n} · 七罪总分 ${Math.round(list.reduce((a,b)=>a+b.v,0)/7)}/100</div>
+  </div>
+  ${chartSVG(list)}
+  <div class="card">
+    <h3>关于你</h3>
+    <p>${top.d}</p>
+  </div>
+  <div class="card">
+    <h3>你的副罪 · ${second.n}</h3>
+    <p>${second.d}</p>
+  </div>
+  <div class="card">
+    <h3>七 罪 指 数</h3>
+    <div class="scores">
+      ${list.map(s=>`<div class="score-row"><span class="n">${s.n}</span><span class="t"><i style="width:${s.v}%"></i></span><span class="v">${s.v}</span></div>`).join('')}
+    </div>
+  </div>
+  <div class="card">
+    <h3>可 以 这 样 发</h3>
+    <div class="share" id="shareText">我的主罪是「${top.n}」，副罪「${second.n}」。<br>七罪指数：${top.n} ${top.v}、${second.n} ${second.v}。<br>你没问，但我替你测了 —— 挺准，自己看着办。</div>
+  </div>
+  <button class="btn ghost" id="copy">复制这段文案</button>
+  <button class="btn ghost" id="again">重 测 一 次</button>
+  <div class="foot">七宗罪人格测试 · 仅供自我观察</div>`;
+}
+
+function chartSVG(list){
+  const cx=170, cy=160, R=110;
+  const n=list.length;
+  const pt=(i,r)=>{
+    const a=-Math.PI/2 + i*2*Math.PI/n;
+    return [cx+Math.cos(a)*r, cy+Math.sin(a)*r];
+  };
+  const grid=[0.25,0.5,0.75,1].map(f=>{
+    const p=[]; for(let i=0;i<n;i++){const[x,y]=pt(i,R*f);p.push(`${x.toFixed(1)},${y.toFixed(1)}`)}
+    return `<polygon points="${p.join(' ')}" fill="none" stroke="#2a201d" stroke-width="1"/>`;
+  }).join('');
+  const spokes=[...Array(n)].map((_,i)=>{
+    const[x,y]=pt(i,R); return `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#2a201d" stroke-width="1"/>`;
+  }).join('');
+  const shape=[...Array(n)].map((_,i)=>{
+    const[x,y]=pt(i,R*list[i].v/100); return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  const labels=[...Array(n)].map((_,i)=>{
+    const[x,y]=pt(i,R+24);
+    const anchor = Math.abs(x-cx)<8?'middle':(x>cx?'start':'end');
+    return `<text x="${x.toFixed(1)}" y="${(y+4).toFixed(1)}" fill="#8a7f7a" font-size="11" text-anchor="${anchor}" font-family="sans-serif">${list[i].n}</text>`;
+  }).join('');
+  return `<svg class="chart" viewBox="0 0 340 320" xmlns="http://www.w3.org/2000/svg">
+    ${grid}${spokes}
+    <polygon points="${shape}" fill="rgba(180,24,47,.28)" stroke="#c9a227" stroke-width="1.6"/>
+    ${labels}
+  </svg>`;
+}
+
+function bind(){
+  const start=document.getElementById('start');
+  if(start) start.onclick=()=>{idx=0;render()};
+  document.querySelectorAll('.opt').forEach(b=>{
+    b.onclick=()=>{
+      const v=+b.dataset.v, k=Q[idx][1];
+      score[k]+=v;
+      idx++;
+      render();
+      window.scrollTo({top:0,behavior:'smooth'});
+    };
+  });
+  const copy=document.getElementById('copy');
+  if(copy) copy.onclick=async()=>{
+    const t=document.getElementById('shareText').innerText.replace(/\n/g,'\n');
+    try{ await navigator.clipboard.writeText(t); copy.textContent='已复制 ✓'; }
+    catch(e){ copy.textContent='长按上面文字手动复制'; }
+  };
+  const again=document.getElementById('again');
+  if(again) again.onclick=()=>{
+    for(const k in score){score[k]=0}
+    idx=-1;render();window.scrollTo({top:0});
+  };
+}
+
+idx=-1;
+render();
+</script>
+</body>
+</html>
